@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 图像音频生成器</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <i class="fas fa-magic"></i>
+                    AI 创作工坊
+                </h1>
+                <div class="header-controls">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 选项卡导航 -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="image">
+                    <i class="fas fa-image"></i>
+                    图像生成
+                </button>
+                <button class="tab-btn" data-tab="audio">
+                    <i class="fas fa-music"></i>
+                    音频合成
+                </button>
+                <button class="tab-btn" data-tab="transcription">
+                    <i class="fas fa-microphone"></i>
+                    音频转录
+                </button>
+            </div>
+
+            <!-- 图像选项卡 -->
+            <div class="tab-content active" id="image-tab">
+                <div class="content-grid">
+                    <!-- 左侧：上传和控制区 -->
+                    <div class="control-panel">
+                        <div class="upload-section">
+                            <h3>图片上传</h3>
+                            <div class="upload-area" id="imageUploadArea">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>拖拽图片到此处或点击上传</p>
+                                    <p class="upload-hint">支持 JPG、PNG、WebP、GIF 格式</p>
+                                </div>
+                                <input type="file" id="imageFileInput" multiple accept="image/*" hidden>
+                            </div>
+                            <div class="uploaded-images" id="uploadedImages"></div>
+                        </div>
+
+                        <div class="prompt-section">
+                            <h3>提示词描述</h3>
+                            <textarea 
+                                id="imagePrompt" 
+                                placeholder="请输入图像生成的提示词描述..."
+                                rows="4"
+                            ></textarea>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="generateImageBtn">
+                                <i class="fas fa-magic"></i>
+                                生成图像
+                            </button>
+                            <button class="btn btn-secondary" id="repairImageBtn">
+                                <i class="fas fa-tools"></i>
+                                修复图像
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：结果展示区 -->
+                    <div class="result-panel">
+                        <h3>处理结果</h3>
+                        <div class="result-area" id="imageResults">
+                            <div class="empty-state">
+                                <i class="fas fa-image"></i>
+                                <p>处理后的图片将在这里显示</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 音频选项卡 -->
+            <div class="tab-content" id="audio-tab">
+                <div class="content-grid">
+                    <!-- 左侧：音色和控制区 -->
+                    <div class="control-panel">
+                        <div class="voice-section">
+                            <h3>音色选择</h3>
+                            <div class="voice-list" id="voiceList">
+                                <div class="loading-voices">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>加载音色列表中...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="upload-section">
+                            <h3>上传自定义音色</h3>
+                            <div class="upload-area small" id="audioUploadArea">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-microphone"></i>
+                                    <p>上传音频文件</p>
+                                    <p class="upload-hint">支持 MP3、WAV、AAC、FLAC 格式</p>
+                                </div>
+                                <input type="file" id="audioFileInput" accept="audio/*" hidden>
+                            </div>
+                            <!-- 上传的自定义音色列表（可播放/可删除） -->
+                            <div class="uploaded-audios" id="audioUploadedAudios"></div>
+                        </div>
+
+                        <div class="text-section">
+                            <h3>合成文本</h3>
+                            <textarea 
+                                id="audioText" 
+                                placeholder="请输入要合成的文本内容..."
+                                rows="4"
+                            ></textarea>
+                        </div>
+
+                        <div class="audio-controls">
+                            <div class="control-group">
+                                <label>语速</label>
+                                <input type="range" id="speechRate" min="0.5" max="2" step="0.1" value="1">
+                                <span id="rateValue">1.0x</span>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="synthesizeAudioBtn">
+                                <i class="fas fa-play"></i>
+                                合成音频
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：结果展示区 -->
+                    <div class="result-panel">
+                        <h3>合成结果</h3>
+                        <div class="result-area" id="audioResults">
+                            <div class="empty-state">
+                                <i class="fas fa-music"></i>
+                                <p>合成的音频将在这里显示</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 音频转录选项卡 -->
+            <div class="tab-content" id="transcription-tab">
+                <div class="content-grid">
+                    <!-- 左侧：上传和控制区 -->
+                    <div class="control-panel">
+                        <div class="upload-section">
+                            <h3>音频文件上传</h3>
+                            <div class="upload-area" id="transcriptionUploadArea">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-file-audio"></i>
+                                    <p>拖拽音频文件到此处或点击上传</p>
+                                    <p class="upload-hint">支持 MP3、WAV、AAC、M4A、FLAC 格式</p>
+                                </div>
+                                <input type="file" id="transcriptionFileInput" accept="audio/*" hidden>
+                            </div>
+                            <div class="uploaded-audios" id="transcriptionUploadedAudios"></div>
+                        </div>
+
+                        <div class="transcription-options">
+                            <h3>转录选项</h3>
+                            <div class="option-group">
+                                <label>
+                                    <input type="checkbox" id="enableTimestamps" checked>
+                                    包含时间戳
+                                </label>
+                            </div>
+                            <div class="option-group">
+                                <label>
+                                    <input type="checkbox" id="enableSpeakerDiarization">
+                                    说话人分离
+                                </label>
+                            </div>
+                            <div class="option-group">
+                                <label for="transcriptionLanguage">语言：</label>
+                                <select id="transcriptionLanguage">
+                                    <option value="auto">自动检测</option>
+                                    <option value="zh">中文</option>
+                                    <option value="en">英文</option>
+                                    <option value="ja">日文</option>
+                                    <option value="ko">韩文</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="transcribeAudioBtn">
+                                <i class="fas fa-microphone-alt"></i>
+                                开始转录
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：结果展示区 -->
+                    <div class="result-panel">
+                        <h3>转录结果</h3>
+                        <div class="result-area" id="transcriptionResults">
+                            <div class="empty-state">
+                                <i class="fas fa-file-alt"></i>
+                                <p>转录结果将在这里显示</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 加载遮罩 -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p id="loadingText">处理中...</p>
+            </div>
+        </div>
+
+        <!-- 通知容器 -->
+        <div class="toast-container" id="toastContainer"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
